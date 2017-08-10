@@ -39,6 +39,10 @@ public class Hand implements Comparable<Hand> {
 		return this.value > 21;
 	}
 
+	public boolean isPair() {
+		return size() == 2 && this.getCards().get(0).getValue().getValue() == this.getCards().get(1).getValue().getValue();
+	}
+
 	public int size() {
 		return this.cards.size();
 	}

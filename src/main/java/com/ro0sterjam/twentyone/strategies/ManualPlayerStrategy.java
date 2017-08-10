@@ -30,7 +30,7 @@ public class ManualPlayerStrategy extends PlayerStrategy {
                         return Action.HIT;
                     case "S":
                     case "s":
-                        return Action.STAY;
+                        return Action.STAND;
                     case "SP":
                     case "sp":
                         if (hand.size() != 2 || hand.getCards().get(0).getValue().getValue() != hand.getCards().get(1).getValue().getValue()) {

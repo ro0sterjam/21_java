@@ -23,6 +23,7 @@ public class Player implements Actor, Watcher {
     @Getter private final List<PlayerHand> hands;
     @Getter private PlayerStrategy strategy;
     @Getter private double cash;
+    @Getter private double maxCash;
 
     public Player() {
         this(new SimplePlayerStrategy());
@@ -36,6 +37,7 @@ public class Player implements Actor, Watcher {
         this.hands = new ArrayList<>();
         this.strategy = strategy;
         this.cash = starterCash;
+        this.maxCash = starterCash;
     }
 
     public double bet(double bet) {
@@ -52,6 +54,9 @@ public class Player implements Actor, Watcher {
 
     public void addCash(double cash) {
         this.cash += cash;
+        if (this.maxCash < this.cash) {
+            this.maxCash = this.cash;
+        }
     }
 
     @Override

@@ -117,7 +117,7 @@ public class Game {
 	}
 
 	private void performPlayerHandActions(Player player, PlayerHand hand) {
-		if (hand.isBusted()) {
+		if (hand.isBusted() || hand.getBestHand() == 21) {
 			return;
 		}
 		switch (player.getStrategy().nextAction(this.dealer.getHand(), hand, player.getCash())) {

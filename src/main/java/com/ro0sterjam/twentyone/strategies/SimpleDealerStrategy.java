@@ -7,7 +7,7 @@ public class SimpleDealerStrategy implements DealerStrategy {
 
 	public Action nextAction(Hand hand) {
 		if (hand.getValue() >= 17 || hand.getHigherValue().isPresent() && hand.getHigherValue().get() > 17 && hand.getHigherValue().get() <= 21) {
-			return Action.STAY;
+			return Action.STAND;
 		} else {
 			return Action.HIT;
 		}
