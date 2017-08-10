@@ -1,6 +1,5 @@
 package com.ro0sterjam.twentyone.table;
 
-import com.ro0sterjam.twentyone.actors.Actor;
 import lombok.ToString;
 
 import java.util.Collection;
@@ -29,8 +28,8 @@ public class Shoe {
 		Collections.shuffle(this.cards);
 	}
 
-	public void deal(Actor actor) {
-		actor.take(this.cards.remove(this.cards.size() - 1));
+	public Card deal() {
+		return this.cards.remove(this.cards.size() - 1);
 	}
 
 	public boolean isDone() {

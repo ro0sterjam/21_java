@@ -23,11 +23,11 @@ public class Hand implements Comparable<Hand> {
 
 	public void add(@NonNull Card card) {
 		this.cards.add(card);
-		this.value += card.getValue();
+		this.value += card.getValue().getValue();
 		if (this.higherValue.isPresent()) {
-			this.higherValue = Optional.of(this.higherValue.get() + card.getValue());
-		} else if (card.getHigherValue().isPresent()) {
-			this.higherValue = Optional.of(this.value - card.getValue() + card.getHigherValue().get());
+			this.higherValue = Optional.of(this.higherValue.get() + card.getValue().getValue());
+		} else if (card.getValue().getHigherValue().isPresent()) {
+			this.higherValue = Optional.of(this.value - card.getValue().getValue() + card.getValue().getHigherValue().get());
 		}
 	}
 

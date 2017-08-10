@@ -1,6 +1,7 @@
 package com.ro0sterjam.twentyone.table;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.*;
@@ -13,16 +14,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class Card {
 
-    private final CardValue value;
-    private boolean revealed;
-
-    public int getValue() {
-        return this.value.getValue();
-    }
-
-    public Optional<Integer> getHigherValue() {
-        return this.value.getHigherValue();
-    }
+    @Getter private final CardValue value;
+    @Getter private boolean revealed;
 
     public void reveal() {
         this.revealed = true;

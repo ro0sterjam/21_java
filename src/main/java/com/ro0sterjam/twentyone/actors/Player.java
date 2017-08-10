@@ -1,30 +1,31 @@
 package com.ro0sterjam.twentyone.actors;
 
+import com.ro0sterjam.twentyone.events.GlobalEvent;
+import com.ro0sterjam.twentyone.events.PlayerEvent;
+import com.ro0sterjam.twentyone.exceptions.NotEnoughCashException;
 import com.ro0sterjam.twentyone.strategies.PlayerStrategy;
 import com.ro0sterjam.twentyone.strategies.SimplePlayerStrategy;
-import com.ro0sterjam.twentyone.table.Action;
-import com.ro0sterjam.twentyone.table.Card;
 import com.ro0sterjam.twentyone.table.PlayerHand;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by kenwang on 2017-08-03.
  */
-@ToString(callSuper = true, exclude = "strategy")
-public class Player extends Actor {
+@ToString(exclude = "strategy")
+public class Player implements Actor, Watcher {
 
-    @Getter @Setter private PlayerHand hand;
-
-    private static final PlayerStrategy DEFAULT_STRATEGY = SimplePlayerStrategy.INSTANCE;
     private static final double DEFAULT_STARTER_CASH = 200;
 
-    private PlayerStrategy strategy;
-    private double cash;
+    @Getter private final List<PlayerHand> hands;
+    @Getter private PlayerStrategy strategy;
+    @Getter private double cash;
 
     public Player() {
-        this(DEFAULT_STRATEGY);
+        this(new SimplePlayerStrategy());
     }
 
     public Player(PlayerStrategy strategy) {
@@ -32,24 +33,21 @@ public class Player extends Actor {
     }
 
     public Player(PlayerStrategy strategy, double starterCash) {
-        super();
+        this.hands = new ArrayList<>();
         this.strategy = strategy;
         this.cash = starterCash;
     }
 
-    @Override
-    public Action nextAction() {
-        return strategy.nextAction(this.hand, this.cash);
-    }
-
-    public double bet() {
-        double bet = strategy.bet(this.cash);
+    public double bet(double bet) {
+        if (this.cash < bet) {
+            throw new NotEnoughCashException();
+        }
         this.cash -= bet;
         return bet;
     }
 
-    public boolean isPlaying() {
-        return this.cash > 0 && this.cash < 400;
+    public boolean isPlaying(double minBet) {
+        return this.strategy.isPlaying(minBet, this.cash);
     }
 
     public void addCash(double cash) {
@@ -57,17 +55,17 @@ public class Player extends Actor {
     }
 
     @Override
-    public void take(Card card) {
-        card.reveal();
-        super.take(card);
+    public void onGlobalEvent(GlobalEvent event) {
+        this.strategy.onGlobalEvent(event);
     }
 
     @Override
-    public void clearHand() {
-        this.hand = null;
+    public void onPlayerEvent(PlayerEvent event) {
+        this.strategy.onPlayerEvent(event);
     }
 
-    public boolean hasHand() {
-        return this.hand != null;
+    public void clearHands() {
+        this.hands.clear();
     }
+
 }
