@@ -25,6 +25,10 @@ public class Dealer implements Actor, HasHand {
 		return this.hand.getCards().get(1);
 	}
 
+	public Card getHoleCard() {
+		return this.hand.getCards().get(0);
+	}
+
 	@Override
 	public boolean take(Card card) {
 		this.hand = hand.add(card);

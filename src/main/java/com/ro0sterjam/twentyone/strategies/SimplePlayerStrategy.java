@@ -79,7 +79,7 @@ public class SimplePlayerStrategy extends PlayerStrategy {
 
     @Override
     public boolean isPlaying(double minBet, double cash) {
-        return cash >= minBet;
+        return cash >= minBet && cash < 1000;
     }
 
     @Override

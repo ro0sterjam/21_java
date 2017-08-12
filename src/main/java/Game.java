@@ -5,7 +5,9 @@ import com.ro0sterjam.twentyone.events.*;
 import com.ro0sterjam.twentyone.exceptions.IllegalActionException;
 import com.ro0sterjam.twentyone.rules.GameRules;
 import com.ro0sterjam.twentyone.rules.SimpleGameRules;
-import com.ro0sterjam.twentyone.strategies.ManualPlayerStrategy;
+import com.ro0sterjam.twentyone.strategies.RandomPlayerStrategy;
+import com.ro0sterjam.twentyone.strategies.SimpleCardCountingStrategy;
+import com.ro0sterjam.twentyone.strategies.SimplePlayerStrategy;
 import com.ro0sterjam.twentyone.table.*;
 
 import java.util.ArrayList;
@@ -45,8 +47,12 @@ public class Game {
 		sendGlobalEvent(new NewRoundEvent());
 		if (this.shoe.isDone()) loadShoe();
 		IntStream.range(0, 2).forEach(i -> {
-			this.seats.forEach(this::deal);
-			deal(this.dealer);
+			this.seats.forEach(this::dealAndReveal);
+			if (i == 0) {
+				this.dealer.take(this.shoe.deal());
+			} else {
+				dealAndReveal(this.dealer);
+			}
 		});
 	}
 
@@ -60,12 +66,14 @@ public class Game {
 				}
 			});
 			if (this.dealer.getHand().isBlackjack()) {
+				sendGlobalEvent(new CardRevealedEvent(this.dealer.getHoleCard()));
 				insuranceTakers.forEach(seat -> seat.getPlayer().addCash((seat.getBet() / 2) * (1 + this.rules.getInsurancePayout())));
 				this.seats.stream().filter(seat -> seat.getHand().isBlackjack()).forEach(seat -> seat.getPlayer().addCash(seat.getBet()));
 				return true;
 			}
 			return false;
 		} else if (this.dealer.getHand().isBlackjack()) {
+			sendGlobalEvent(new CardRevealedEvent(this.dealer.getHoleCard()));
 			this.seats.stream().filter(seat -> seat.getHand().isBlackjack()).forEach(seat -> seat.getPlayer().addCash(seat.getBet()));
 			return true;
 		}
@@ -85,7 +93,7 @@ public class Game {
 
 		switch (seat.nextAction(this.dealer.getUpcard())) {
 			case HIT:
-				deal(seat);
+				dealAndReveal(seat);
 				if (seat.isBusted()) {
 					sendPlayerEvent(seat.getPlayer(), new BustedEvent(seat.getHand()));
 				} else if (seat.getHand().getBestTotal() == 21) {
@@ -101,7 +109,7 @@ public class Game {
 				Seat newSeat = new Seat(seat.getPlayer(), seat.getBet() + seat.getPlayer().getCash(seat.getBet()));
 				newSeat.take(seat.getHand().getCards().get(0));
 				newSeat.take(seat.getHand().getCards().get(1));
-				deal(newSeat);
+				dealAndReveal(newSeat);
 				if (newSeat.isBusted()) {
 					sendPlayerEvent(newSeat.getPlayer(), new BustedEvent(newSeat.getHand()));
 				} else {
@@ -118,14 +126,14 @@ public class Game {
 				Seat secondSeat = new Seat(seat.getPlayer(), seat.getPlayer().getCash(seat.getBet()));
 				secondSeat.take(seat.getHand().getCards().get(1));
 
-				deal(firstSeat);
+				dealAndReveal(firstSeat);
 				if (firstSeat.getHand().getBestTotal() == 21 || seat.getHand().getTotal() == 2) {
 					this.finishedSeats.add(seat);
 				} else {
 					performPlayerAction(firstSeat);
 				}
 
-				deal(secondSeat);
+				dealAndReveal(secondSeat);
 				if (secondSeat.getHand().getBestTotal() == 21 || seat.getHand().getTotal() == 2) {
 					this.finishedSeats.add(seat);
 				} else {
@@ -139,8 +147,9 @@ public class Game {
 	}
 
 	public void performDealerActions() {
+		sendGlobalEvent(new CardRevealedEvent(this.dealer.getHoleCard()));
 		while (this.dealer.nextAction() == Action.HIT && !this.dealer.getHand().isBusted()) {
-			deal(this.dealer);
+			dealAndReveal(this.dealer);
 		}
 	}
 
@@ -180,34 +189,45 @@ public class Game {
 		player.onPlayerEvent(event);
 	}
 
-	private boolean deal(HasHand seat) {
+	private boolean dealAndReveal(HasHand hasHand) {
 		Card card = this.shoe.deal();
-		sendGlobalEvent(new DealEvent(card));
-		return seat.take(card);
+		sendGlobalEvent(new CardRevealedEvent(card));
+		return hasHand.take(card);
 	}
 
 	public void printResults() {
 		this.players.forEach(System.out::println);
 	}
 
-	public static void main(String args[]) {
-		GameRules rules = new SimpleGameRules();
-		List<Player> players = IntStream.range(0, 2).mapToObj(i -> new Player(new ManualPlayerStrategy())).collect(Collectors.toList());
-		Game game = new Game(rules, players);
-		game.loadShoe();
-		while (game.hasPlayers()) {
-			game.placeBets();
-			game.dealTable();
-			if (game.checkForDealerBlackjack()) {
+	public static void main(String args[]) {;
+		double[] cash = new double[3];
+		for (int i = 0; i < 1000; i++) {
+			GameRules rules = new SimpleGameRules();
+			List<Player> players = new ArrayList<>();
+			players.add(new Player(new SimplePlayerStrategy()));
+			players.add(new Player(new SimpleCardCountingStrategy()));
+			players.add(new Player(new RandomPlayerStrategy()));
+			Game game = new Game(rules, players);
+			game.loadShoe();
+			while (game.hasPlayers()) {
+				game.placeBets();
+				game.dealTable();
+				if (game.checkForDealerBlackjack()) {
+					game.clearTable();
+					continue;
+				}
+				game.performPlayerActions();
+				game.performDealerActions();
+				game.processRoundResults();
 				game.clearTable();
-				continue;
 			}
-			game.performPlayerActions();
-			game.performDealerActions();
-			game.processRoundResults();
-			game.clearTable();
+			cash[0] += players.get(0).getCash();
+			cash[1] += players.get(1).getCash();
+			cash[2] += players.get(2).getCash();
 		}
-		game.printResults();
+		System.out.println(cash[0] / 1000);
+		System.out.println(cash[1] / 1000);
+		System.out.println(cash[2] / 1000);
 	}
 
 }

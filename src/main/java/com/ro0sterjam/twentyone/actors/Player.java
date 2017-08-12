@@ -18,7 +18,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 public class Player implements Actor, Watcher {
 
-    private static final double DEFAULT_STARTER_CASH = 200;
+    private static final double DEFAULT_STARTER_CASH = 500;
 
     private final PlayerStrategy strategy;
     @Getter private double cash = DEFAULT_STARTER_CASH;
