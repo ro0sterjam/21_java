@@ -4,15 +4,15 @@ import com.ro0sterjam.twentyone.actors.Watcher;
 import com.ro0sterjam.twentyone.events.GlobalEvent;
 import com.ro0sterjam.twentyone.events.PlayerEvent;
 import com.ro0sterjam.twentyone.table.Action;
-import com.ro0sterjam.twentyone.table.DealerHand;
-import com.ro0sterjam.twentyone.table.PlayerHand;
+import com.ro0sterjam.twentyone.table.Card;
+import com.ro0sterjam.twentyone.table.Hand;
 
 /**
  * Created by kenwang on 2017-08-09.
  */
 public abstract class PlayerStrategy implements Watcher {
 
-    public abstract Action nextAction(DealerHand dealerHand, PlayerHand hand, double cash);
+    public abstract Action nextAction(Card upcard, Hand hand, double bet, double cash);
 
     public abstract double nextBet(double minBet, double cash);
 

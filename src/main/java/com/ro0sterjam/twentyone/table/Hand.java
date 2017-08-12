@@ -1,54 +1,40 @@
 package com.ro0sterjam.twentyone.table;
 
+import com.google.common.collect.ImmutableList;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
-@ToString
-public class Hand implements Comparable<Hand> {
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Hand implements Comparable<Hand> {
 
-	@Getter private final List<Card> cards;
-	@Getter private int value;
-	@Getter private Optional<Integer> higherValue;
+	@Getter private final ImmutableList<Card> cards;
+	@Getter(lazy = true) private final int total = this.cards.stream().mapToInt(Card::getValue).sum();
+	@Getter(lazy = true) private final boolean soft = this.cards.stream().anyMatch(card -> card.getRank() == Rank.ACE) && getTotal() <= 11;
+	@Getter(lazy = true) private final Optional<Integer> softTotal = isSoft()? Optional.of(getTotal() + 10) : Optional.empty();
+	@Getter(lazy = true) private final int bestTotal = isBusted()? -1 : getSoftTotal().orElse(getTotal());
+	@Getter(lazy = true) private final boolean busted = getTotal() > 21;
+	@Getter(lazy = true) private final boolean startingHand = getCards().size() == 2;
+	@Getter(lazy = true) private final boolean pair = isStartingHand() && getCards().get(0).getValue() == getCards().get(1).getValue();
 
-	public Hand() {
-		this.cards = new ArrayList<>();
-		this.value = 0;
-		this.higherValue = Optional.empty();
+	public static Hand empty() {
+		return new Hand(ImmutableList.of());
 	}
 
-	public void add(@NonNull Card card) {
-		this.cards.add(card);
-		this.value += card.getValue().getValue();
-		if (this.higherValue.isPresent()) {
-			this.higherValue = Optional.of(this.higherValue.get() + card.getValue().getValue());
-		} else if (card.getValue().getHigherValue().isPresent()) {
-			this.higherValue = Optional.of(this.value - card.getValue().getValue() + card.getValue().getHigherValue().get());
-		}
-	}
-
-	public int getBestHand() {
-		return this.higherValue.isPresent()? (this.getHigherValue().get() <= 21? this.higherValue.get() : this.value) : this.value;
-	}
-
-	public boolean isBusted() {
-		return this.value > 21;
-	}
-
-	public boolean isPair() {
-		return size() == 2 && this.getCards().get(0).getValue().getValue() == this.getCards().get(1).getValue().getValue();
-	}
-
-	public int size() {
-		return this.cards.size();
+	public Hand add(@Nonnull Card card) {
+		return new Hand(ImmutableList.<Card> builder().addAll(this.cards).add(card).build());
 	}
 
 	@Override
-	public int compareTo(Hand other) {
-		return isBusted()? (other.isBusted()? 0 : -1) : (other.isBusted()? 1 : (getBestHand() > other.getBestHand()? 1 : (getBestHand() < other.getBestHand()? -1 : 0)));
+	public int compareTo(@Nonnull Hand other) {
+		return Integer.compare(getBestTotal(), other.getBestTotal());
+	}
+
+	@Override
+	public String toString() {
+		return cards.toString();
 	}
 }

@@ -1,36 +1,22 @@
 package com.ro0sterjam.twentyone.table;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import lombok.ToString;
+import lombok.experimental.Delegate;
 
 /**
  * Created by kenwang on 2017-08-03.
  */
+@ToString
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class Card {
 
-    @Getter private final CardValue value;
-    @Getter private boolean revealed;
-
-    public void reveal() {
-        this.revealed = true;
-    }
+    @Delegate @Getter private final Rank rank;
+    @Getter private final Suite suite;
 
     @Override
     public String toString() {
-        return this.revealed ? value.toString() : "?";
-    }
-
-    public static List<Card> fullDeck() {
-        return Arrays.stream(CardValue.values())
-                .map(cardValue -> Collections.nCopies(4, cardValue))
-                .flatMap(Collection::stream)
-                .map(Card::new)
-                .collect(Collectors.toList());
+        return this.rank.toString();
     }
 }

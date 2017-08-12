@@ -1,40 +1,33 @@
 package com.ro0sterjam.twentyone.actors;
 
-import com.ro0sterjam.twentyone.strategies.DealerStrategy;
-import com.ro0sterjam.twentyone.strategies.SimpleDealerStrategy;
+import com.ro0sterjam.twentyone.rules.DealerRules;
 import com.ro0sterjam.twentyone.table.Action;
-import com.ro0sterjam.twentyone.table.DealerHand;
+import com.ro0sterjam.twentyone.table.Card;
+import com.ro0sterjam.twentyone.table.Hand;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.RequiredArgsConstructor;
 
-@ToString(exclude = "strategy")
-public class Dealer implements Actor {
+@RequiredArgsConstructor
+public class Dealer implements Actor, HasHand {
 
-	@Getter private DealerHand hand;
-	private DealerStrategy strategy;
-
-	public Dealer() {
-		this(new SimpleDealerStrategy());
-	}
-
-	public Dealer(DealerStrategy strategy) {
-		this.hand = new DealerHand();
-		this.strategy = strategy;
-	}
-
-	public void revealDownCard() {
-		this.hand.getCards().get(0).reveal();
-	}
+	@Getter private Hand hand = Hand.empty();
+	private final DealerRules rules;
 
 	public void clearHand() {
-		this.hand = new DealerHand();
+		this.hand = Hand.empty();
 	}
 
 	public Action nextAction() {
-		return this.strategy.nextAction(this.hand);
+		return this.rules.nextAction(this.hand);
 	}
 
-	public boolean isBusted() {
-		return this.hand.isBusted();
+	public Card getUpcard() {
+		return this.hand.getCards().get(1);
+	}
+
+	@Override
+	public boolean take(Card card) {
+		this.hand = hand.add(card);
+		return !this.hand.isBusted();
 	}
 }

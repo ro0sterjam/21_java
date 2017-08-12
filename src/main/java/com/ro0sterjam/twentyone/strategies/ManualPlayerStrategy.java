@@ -1,10 +1,12 @@
 package com.ro0sterjam.twentyone.strategies;
 
+import com.ro0sterjam.twentyone.events.BustedEvent;
 import com.ro0sterjam.twentyone.events.PlayerEvent;
 import com.ro0sterjam.twentyone.events.RoundResultsEvent;
 import com.ro0sterjam.twentyone.table.Action;
-import com.ro0sterjam.twentyone.table.DealerHand;
-import com.ro0sterjam.twentyone.table.PlayerHand;
+import com.ro0sterjam.twentyone.table.Card;
+import com.ro0sterjam.twentyone.table.Hand;
+import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,44 +19,42 @@ import java.util.Scanner;
 public class ManualPlayerStrategy extends PlayerStrategy {
 
     @Override
-    public Action nextAction(DealerHand dealerHand, PlayerHand hand, double cash) {
-        System.out.println("Dealer: " + dealerHand);
+    @SneakyThrows(IOException.class)
+    public Action nextAction(Card upcard, Hand hand, double bet, double cash) {
+        System.out.println("Dealer: " + upcard);
         System.out.println("You: " + hand);
         System.out.println("Next Action? (H/S/SP/D):");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
-            try {
-                switch (br.readLine()) {
-                    case "H":
-                    case "h":
-                        return Action.HIT;
-                    case "S":
-                    case "s":
-                        return Action.STAND;
-                    case "SP":
-                    case "sp":
-                        if (hand.size() != 2 || hand.getCards().get(0).getValue().getValue() != hand.getCards().get(1).getValue().getValue()) {
-                            System.out.println("Cannot split");
-                            continue;
-                        } else if (hand.getBet() > cash) {
-                            System.out.println("Not enough cash");
-                            continue;
-                        }
-                        return Action.SPLIT;
-                    case "D":
-                    case "d":
-                        if (hand.size() != 2) {
-                            System.out.println("Cannot double");
-                            continue;
-                        } else if (hand.getBet() > cash) {
-                            System.out.println("Not enough cash");
-                            continue;
-                        }
-                        return Action.DOUBLE;
-                    default:
-                        System.out.println("Invalid Input");
-                }
-            } catch (IOException e) {
+            switch (br.readLine()) {
+                case "H":
+                case "h":
+                    return Action.HIT;
+                case "S":
+                case "s":
+                    return Action.STAND;
+                case "SP":
+                case "sp":
+                    if (!hand.isStartingHand() || !hand.isPair()) {
+                        System.out.println("Cannot split");
+                        continue;
+                    } else if (bet > cash) {
+                        System.out.println("Not enough cash");
+                        continue;
+                    }
+                    return Action.SPLIT;
+                case "D":
+                case "d":
+                    if (!hand.isStartingHand()) {
+                        System.out.println("Cannot double");
+                        continue;
+                    } else if (bet > cash) {
+                        System.out.println("Not enough cash");
+                        continue;
+                    }
+                    return Action.DOUBLE;
+                default:
+                    System.out.println("Invalid Input");
             }
         }
     }
@@ -73,7 +73,7 @@ public class ManualPlayerStrategy extends PlayerStrategy {
             if (bet > cash) {
                 System.out.println("Not enough cash");
                 continue;
-            } else if (bet <= minBet) {
+            } else if (bet < minBet) {
                 System.out.println("Min Bet is: " + minBet);
                 continue;
             }
@@ -88,6 +88,10 @@ public class ManualPlayerStrategy extends PlayerStrategy {
             System.out.println("Dealer: " + roundResultsEvent.getDealerHand());
             System.out.println("You: " + roundResultsEvent.getHand());
             System.out.println("Results: " + roundResultsEvent.getResult());
+        } else if (event instanceof BustedEvent) {
+            BustedEvent bustedEvent = (BustedEvent) event;
+            System.out.println("You: " + bustedEvent.getHand());
+            System.out.println("Results: BUSTED");
         }
     }
 

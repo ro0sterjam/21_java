@@ -1,7 +1,6 @@
 package com.ro0sterjam.twentyone.events;
 
-import com.ro0sterjam.twentyone.table.DealerHand;
-import com.ro0sterjam.twentyone.table.PlayerHand;
+import com.ro0sterjam.twentyone.table.Hand;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -15,8 +14,8 @@ public class RoundResultsEvent implements PlayerEvent {
         WIN, LOSE, PUSH
     }
 
-    @Getter private final DealerHand dealerHand;
-    @Getter private final PlayerHand hand;
+    @Getter private final Hand dealerHand;
+    @Getter private final Hand hand;
     @Getter private final Result result;
 
 }
