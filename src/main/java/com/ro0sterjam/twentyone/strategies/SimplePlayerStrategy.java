@@ -82,4 +82,9 @@ public class SimplePlayerStrategy extends PlayerStrategy {
         return cash >= minBet;
     }
 
+    @Override
+    public boolean takeInsurance(Hand hand, double bet, double cash) {
+        return false;
+    }
+
 }

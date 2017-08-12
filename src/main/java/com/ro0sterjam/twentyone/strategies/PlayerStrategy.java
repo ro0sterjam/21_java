@@ -12,6 +12,8 @@ import com.ro0sterjam.twentyone.table.Hand;
  */
 public abstract class PlayerStrategy implements Watcher {
 
+    public abstract boolean takeInsurance(Hand hand, double bet, double cash);
+
     public abstract Action nextAction(Card upcard, Hand hand, double bet, double cash);
 
     public abstract double nextBet(double minBet, double cash);

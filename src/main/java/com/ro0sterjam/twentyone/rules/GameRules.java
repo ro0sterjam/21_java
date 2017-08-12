@@ -11,4 +11,8 @@ public interface GameRules {
 
     DealerRules getDealerRules();
 
+    double getBlackjackPayout();
+
+    double getInsurancePayout();
+
 }

@@ -28,6 +28,10 @@ public class Player implements Actor, Watcher {
         return this.strategy.nextAction(upcard, hand, bet, this.cash);
     }
 
+    public boolean takeInsurance(Hand hand, double bet) {
+        return this.strategy.takeInsurance(hand, bet, this.cash);
+    }
+
     public double nextBet(double minBet) {
         return this.strategy.nextBet(minBet, this.cash);
     }

@@ -50,12 +50,39 @@ public class Game {
 		});
 	}
 
+	public boolean checkForDealerBlackjack() {
+		if (this.dealer.getUpcard().getRank() == Rank.ACE) {
+			List<Seat> insuranceTakers = new ArrayList<>();
+			this.seats.forEach(seat -> {
+				if (seat.takeInsurance()) {
+					seat.getPlayer().getCash(seat.getBet() / 2);
+					insuranceTakers.add(seat);
+				}
+			});
+			if (this.dealer.getHand().isBlackjack()) {
+				insuranceTakers.forEach(seat -> seat.getPlayer().addCash((seat.getBet() / 2) * (1 + this.rules.getInsurancePayout())));
+				this.seats.stream().filter(seat -> seat.getHand().isBlackjack()).forEach(seat -> seat.getPlayer().addCash(seat.getBet()));
+				return true;
+			}
+			return false;
+		} else if (this.dealer.getHand().isBlackjack()) {
+			this.seats.stream().filter(seat -> seat.getHand().isBlackjack()).forEach(seat -> seat.getPlayer().addCash(seat.getBet()));
+			return true;
+		}
+		return false;
+	}
+
 	public void performPlayerActions() {
 		this.finishedSeats = new ArrayList<>();
 		this.seats.forEach(this::performPlayerAction);
 	}
 
 	public void performPlayerAction(Seat seat) {
+		if (seat.getHand().isBlackjack()) {
+			seat.getPlayer().addCash(seat.getBet() * (1 + this.rules.getBlackjackPayout()));
+			return;
+		}
+
 		switch (seat.nextAction(this.dealer.getUpcard())) {
 			case HIT:
 				deal(seat);
@@ -92,14 +119,14 @@ public class Game {
 				secondSeat.take(seat.getHand().getCards().get(1));
 
 				deal(firstSeat);
-				if (firstSeat.getHand().getBestTotal() == 21) {
+				if (firstSeat.getHand().getBestTotal() == 21 || seat.getHand().getTotal() == 2) {
 					this.finishedSeats.add(seat);
 				} else {
 					performPlayerAction(firstSeat);
 				}
 
 				deal(secondSeat);
-				if (secondSeat.getHand().getBestTotal() == 21) {
+				if (secondSeat.getHand().getBestTotal() == 21 || seat.getHand().getTotal() == 2) {
 					this.finishedSeats.add(seat);
 				} else {
 					performPlayerAction(secondSeat);
@@ -171,6 +198,10 @@ public class Game {
 		while (game.hasPlayers()) {
 			game.placeBets();
 			game.dealTable();
+			if (game.checkForDealerBlackjack()) {
+				game.clearTable();
+				continue;
+			}
 			game.performPlayerActions();
 			game.performDealerActions();
 			game.processRoundResults();

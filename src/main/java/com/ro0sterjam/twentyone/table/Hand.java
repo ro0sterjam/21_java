@@ -19,6 +19,7 @@ public final class Hand implements Comparable<Hand> {
 	@Getter(lazy = true) private final boolean busted = getTotal() > 21;
 	@Getter(lazy = true) private final boolean startingHand = getCards().size() == 2;
 	@Getter(lazy = true) private final boolean pair = isStartingHand() && getCards().get(0).getValue() == getCards().get(1).getValue();
+	@Getter(lazy = true) private final boolean blackjack = isStartingHand() && getBestTotal() == 21;
 
 	public static Hand empty() {
 		return new Hand(ImmutableList.of());

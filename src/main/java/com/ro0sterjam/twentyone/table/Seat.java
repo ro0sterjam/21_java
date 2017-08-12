@@ -19,6 +19,10 @@ public final class Seat implements HasHand {
         return this.player.nextAction(upcard, this.hand, this.bet);
     }
 
+    public boolean takeInsurance() {
+        return this.player.takeInsurance(this.hand, this.bet);
+    }
+
     public boolean isBusted() {
         return this.hand.isBusted();
     }

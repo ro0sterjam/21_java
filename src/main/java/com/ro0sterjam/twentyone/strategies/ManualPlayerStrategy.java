@@ -6,11 +6,7 @@ import com.ro0sterjam.twentyone.events.RoundResultsEvent;
 import com.ro0sterjam.twentyone.table.Action;
 import com.ro0sterjam.twentyone.table.Card;
 import com.ro0sterjam.twentyone.table.Hand;
-import lombok.SneakyThrows;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Scanner;
 
 /**
@@ -19,14 +15,13 @@ import java.util.Scanner;
 public class ManualPlayerStrategy extends PlayerStrategy {
 
     @Override
-    @SneakyThrows(IOException.class)
     public Action nextAction(Card upcard, Hand hand, double bet, double cash) {
         System.out.println("Dealer: " + upcard);
         System.out.println("You: " + hand);
         System.out.println("Next Action? (H/S/SP/D):");
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        Scanner s = new Scanner(System.in);
         while (true) {
-            switch (br.readLine()) {
+            switch (s.next()) {
                 case "H":
                 case "h":
                     return Action.HIT;
@@ -92,6 +87,26 @@ public class ManualPlayerStrategy extends PlayerStrategy {
             BustedEvent bustedEvent = (BustedEvent) event;
             System.out.println("You: " + bustedEvent.getHand());
             System.out.println("Results: BUSTED");
+        }
+    }
+
+    @Override
+    public boolean takeInsurance(Hand hand, double bet, double cash) {
+        System.out.println("Dealer: A");
+        System.out.println("You: " + hand);
+        System.out.println("Take Insurance? (Y/N):");
+        Scanner s = new Scanner(System.in);
+        while (true) {
+            switch (s.next()) {
+                case "Y":
+                case "y":
+                    return true;
+                case "N":
+                case "n":
+                    return false;
+                default:
+                    System.out.println("Invalid Input");
+            }
         }
     }
 
